@@ -1,0 +1,52 @@
+.tableComponent__wrapper {
+  .data__table {
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+
+    th,
+    td {
+      font-size: 16px;
+      padding: 12px 12px;
+      border: 1px solid #deeef1;
+    }
+  }
+
+  .deleteAll__btn {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    color: white;
+    background-color: var(--btn-color);
+
+    &:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+  }
+
+  .status__wrapper {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+
+    .ship__btn,
+    .receive__btn {
+      padding: 6px 8px;
+      border: none;
+      outline: none;
+      color: white;
+      background-color: var(--btn-color);
+      border-radius: 8px;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}

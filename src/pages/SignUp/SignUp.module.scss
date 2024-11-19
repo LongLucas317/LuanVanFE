@@ -1,0 +1,94 @@
+.form__wrapper {
+  height: 100vh;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form__container {
+  background-color: white;
+  border-radius: 10px;
+
+  .got__account {
+    margin: 0 24px 16px;
+
+    .signIn__text span {
+      color: rgb(13, 92, 182);
+      margin-left: 8px;
+
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.form__section {
+  min-height: 200px;
+  min-width: 200px;
+  padding: 16px 24px 8px;
+
+  .form__header {
+    text-align: center;
+    font-size: 36px;
+    margin: 16px 0px;
+    color: #006600;
+  }
+}
+
+.form__group {
+  margin: 24px 0 12px;
+  position: relative;
+
+  .form__label {
+    font-weight: 600;
+  }
+
+  .form__input {
+    font-size: 14px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    outline: none;
+    border-radius: 10px;
+  }
+
+  .form__group.success .form__input,
+  .form__input:focus {
+    border-color: var(--BTN-color);
+  }
+
+  .form__eye {
+    position: absolute;
+    top: 39px;
+    right: 14px;
+  }
+
+  .form__message {
+    position: absolute;
+    left: 0;
+    bottom: -16px;
+    color: red;
+  }
+}
+
+.form__submit {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  color: white;
+  background-color: var(--btn-color);
+
+  &:hover {
+    opacity: 0.8;
+    cursor: pointer;
+  }
+}

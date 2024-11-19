@@ -1,0 +1,41 @@
+.adminProduct__wrapper {
+  padding: 16px;
+  position: relative;
+}
+.adminProduct__header__block {
+  display: flex;
+  align-items: center;
+
+  .check__product {
+    margin-left: 32px;
+    display: flex;
+    gap: 12px;
+
+    .check__group {
+      padding: 38px 18px;
+      border-radius: 8px;
+      color: white;
+      background-color: var(--btn-color);
+      cursor: pointer;
+    }
+  }
+}
+
+.add__icon {
+  font-size: 40px;
+  height: 100px;
+  width: 100px;
+  text-align: center;
+  line-height: 100px;
+  margin: 12px 0;
+  border: dashed;
+  outline: none;
+  border-radius: 8px;
+  color: var(--btn-color);
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+    cursor: pointer;
+  }
+}

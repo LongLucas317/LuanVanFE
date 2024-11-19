@@ -1,0 +1,98 @@
+.search__result {
+  position: absolute;
+  top: 38px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 12px;
+
+  .searcheResult__header {
+    padding: 6px 12px;
+    background-color: #e0edec;
+  }
+
+  .no__searchData {
+    height: 150px;
+    line-height: 150px;
+    text-align: center;
+    padding: 6px 12px;
+    background-color: #e0edec;
+  }
+
+  .search__list {
+    .search__group {
+      padding: 6px;
+      margin-bottom: 4px;
+      display: flex;
+      gap: 4px;
+
+      &:hover {
+        cursor: pointer;
+        background: rgba(22, 24, 35, 0.03);
+      }
+
+      .result__img {
+        height: 100px;
+        width: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+
+        img {
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+      .result__infor {
+        flex: 1;
+        padding: 2px 4px;
+
+        .result__price {
+          margin-top: 4px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .result__show {
+            color: red;
+            font-weight: 600;
+          }
+
+          .result__through {
+            color: #707070;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: line-through;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* PC */
+@media (min-width: 64em) {
+}
+
+/* Tablet */
+@media (min-width: 46.25em) and (max-width: 63.9375em) {
+}
+
+/* Tablet & Mobile */
+@media (max-width: 63.9375em) {
+  .search__result {
+    position: absolute;
+    top: 48px;
+    left: -157px;
+    width: 429px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 46.1875em) {
+}

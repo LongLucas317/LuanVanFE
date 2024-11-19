@@ -1,0 +1,47 @@
+.adminUser__wrapper {
+  padding: 16px;
+  position: relative;
+
+  .btn__section {
+    margin-top: 16px;
+
+    .adminUser__btn {
+      font-size: 60px;
+      height: 150px;
+      width: 150px;
+      border: dashed;
+      outline: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: var(--BTN-color);
+      opacity: 0.6;
+
+      &:hover {
+        opacity: 1;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .table__section {
+    margin-top: 32px;
+  }
+}
+.form__section {
+  max-width: 600px;
+
+  .product__image {
+    height: "60px";
+    width: "60px";
+    border-radius: "50%";
+    object-fit: "cover";
+  }
+
+  .productImg__btn .upload__btn {
+    &:hover {
+      color: var(--TEXT-color);
+      cursor: pointer;
+      background-color: #2a8d21;
+    }
+  }
+}

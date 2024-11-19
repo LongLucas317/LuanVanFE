@@ -1,0 +1,14 @@
+.admin__wrapper {
+  margin-top: 64px;
+  display: flex;
+
+  .menu__section {
+    min-height: 500px;
+    width: 256px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .render__section {
+    flex: 1;
+  }
+}
