@@ -118,7 +118,7 @@ function Header() {
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </div>
 
-        {searchResult && (
+        {searchValue !== "" && searchResult && (
           <SearchResult handleCloseSearchResult={handleCloseSearchResult} />
         )}
       </div>

@@ -1,11 +1,11 @@
 import classNames from "classnames/bind";
 import styles from "./AdminProduct.module.scss";
 
-import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useRef, useState } from "react";
-import { Button, Form, Input, Space } from "antd";
+import { useEffect, useState } from "react";
+import { Form } from "antd";
 import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 
@@ -16,9 +16,11 @@ import ModalComponent from "../ModalComponent";
 import { useMutationHook } from "~/hooks/useMutationHook";
 import * as message from "~/component/Message";
 import * as ProductService from "~/services/ProductService";
+import * as CommentService from "~/services/CommentService";
 import CreateProductForm from "../CreateProductForm";
 import UpdateProductForm from "../UpdateProductForm";
 import ViewproductDetail from "../ViewProductComponent";
+import ViewSoldOutProduct from "../ViewSoldOutProduct";
 
 const cx = classNames.bind(styles);
 
@@ -120,7 +122,7 @@ function AdminProduct({ keySelect }) {
     formCreate.resetFields();
   };
 
-  // Creat Product ==================================================
+  // Create Product ==================================================
   const [brandSelect, setBrandSelect] = useState("");
   const [ramSelect, setRamSelect] = useState("");
   const [storageSelect, setStorageSelect] = useState("");
@@ -1029,15 +1031,25 @@ function AdminProduct({ keySelect }) {
 
   // ================================================================
 
-  // Delete Product =================================================
+  // Delete Comment =================================================
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
   const [idDeleteProduct, setIdDeleteProduct] = useState(null);
+
+  const mutationDeleteComment = useMutationHook((data) => {
+    const { id, token } = data;
+    const res = CommentService.deleteCommentByProductId(id, token);
+    return res;
+  });
+
+  // ================================================================
+
+  // Delete Product =================================================
 
   const handleCancelDelete = () => {
     setIsModalOpenDelete(false);
   };
 
-  const handleOpenDeleteModal = (id) => {
+  const handleOpenModalDelete = (id) => {
     setIsModalOpenDelete(true);
     setIdDeleteProduct(id);
   };
@@ -1051,6 +1063,11 @@ function AdminProduct({ keySelect }) {
         },
       }
     );
+
+    mutationDeleteComment.mutate({
+      id: idDeleteProduct,
+      token: user?.access_token,
+    });
   };
 
   const mutationDelete = useMutationHook((data) => {
@@ -1059,14 +1076,21 @@ function AdminProduct({ keySelect }) {
     return res;
   });
 
-  const { data: dataDeleted, isSuccess: isSuccessDeleted } = mutationDelete;
+  const {
+    data: dataDeleted,
+    isSuccess: isSuccessDeleted,
+    isError: isErrorDeleted,
+  } = mutationDelete;
 
   useEffect(() => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
       handleCancelDelete();
       setIdDeleteProduct(null);
+      message.success("Xóa sản phẩm thành công");
+    } else if (isErrorDeleted) {
+      message.success("Xóa sản phẩm thất bại");
     }
-  }, [isSuccessDeleted]);
+  }, [isSuccessDeleted, isErrorDeleted]);
 
   // ================================================================
 
@@ -1131,6 +1155,7 @@ function AdminProduct({ keySelect }) {
         image: res?.data?.image,
         images: res?.data?.images,
         brand: res?.data?.brand,
+        operatingSystem: res?.data?.operatingSystem,
         countInStock: res?.data?.countInStock,
         discountAmount: res?.data?.discountAmount,
         timeStartDiscount: `${hoursStart}:${minutesStart}`,
@@ -1203,6 +1228,7 @@ function AdminProduct({ keySelect }) {
     if (id) {
       fetchViewDetailsProduct(id);
     }
+
     setIsOpenProductView(true);
   };
 
@@ -1214,10 +1240,20 @@ function AdminProduct({ keySelect }) {
   // ================================================================
 
   // Get Data =======================================================
+  const [searchData, setSearchData] = useState([]);
+  const [isShowViewSoldOut, setIsShowViewSoldOut] = useState(false);
 
-  const getAllProduct = async () => {
-    const res = await ProductService.getAllProduct("", 100);
-    return res;
+  const getAllProduct = async (search = "") => {
+    let res = {};
+    if (search.length > 0) {
+      res = await ProductService.getAllProduct(search, 100);
+    } else {
+      res = await ProductService.getAllProduct("", 100);
+    }
+
+    if (res?.status === "OK") {
+      setSearchData(res);
+    }
   };
 
   const queryProduct = useQuery({
@@ -1225,7 +1261,7 @@ function AdminProduct({ keySelect }) {
     queryFn: getAllProduct,
   });
 
-  const { isLoading: isLoadingAllProduct, data: products } = queryProduct;
+  const { isLoading: isLoadingAllProduct } = queryProduct;
 
   const fetchAllBrandProduct = async () => {
     const res = await ProductService.getAllBrandProduct();
@@ -1272,7 +1308,7 @@ function AdminProduct({ keySelect }) {
   }, []);
 
   const handleGetProductSoldOut = () => {
-    const data = products?.data?.filter((product) => {
+    const data = searchData?.data?.filter((product) => {
       const option = product?.options?.filter((item) => {
         if (item?.quantity <= 10) {
           return item;
@@ -1292,7 +1328,7 @@ function AdminProduct({ keySelect }) {
   };
 
   const onCheckProductOptionsQuantity = () => {
-    const data = products?.data?.filter((product) => {
+    const data = searchData?.data?.filter((product) => {
       const option = product?.options?.filter((item) => {
         if (item?.quantity <= 10) {
           return item;
@@ -1311,129 +1347,39 @@ function AdminProduct({ keySelect }) {
     return data?.length;
   };
 
+  const handleOpenViewSoldOut = () => {
+    setIsShowViewSoldOut(true);
+  };
+
+  const handleCloseViewSoldOut = () => {
+    setIsShowViewSoldOut(false);
+  };
+
   useEffect(() => {
     handleGetProductSoldOut();
     onCheckProductOptionsQuantity();
   }, []);
 
-  const searchInput = useRef(null);
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-  };
-  const handleReset = (clearFilters) => {
-    clearFilters();
-  };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<FontAwesomeIcon icon={faMagnifyingGlass} />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <FontAwesomeIcon
-        icon={faMagnifyingGlass}
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-  });
-
   const columns = [
     {
       title: "Tên",
       dataIndex: "name",
-      render: (text) => <a>{text}</a>,
-      sorter: (a, b) => a.name.length - b.name.length,
-      ...getColumnSearchProps("name"),
     },
     {
-      title: "Nhãn hiệu",
+      title: "Thương hiệu",
       dataIndex: "brand",
     },
     {
       title: "Trạng thái",
       dataIndex: "isPublic",
-      sorter: (a, b) => a.price - b.price,
-      // filters: [
-      //   {
-      //     text: ">= 100",
-      //     value: ">=",
-      //   },
-      //   {
-      //     text: "<= 100",
-      //     value: "<=",
-      //   },
-      // ],
-      onFilter: (value, record) => {
-        if (value === ">=") {
-          return record.price >= 50;
-        }
-        return record.price <= 50;
-      },
     },
     {
       title: "Số lượng",
       dataIndex: "countInStock",
-      sorter: (a, b) => a.countInStock - b.countInStock,
     },
     {
       title: "Đã bán",
       dataIndex: "selled",
-      sorter: (a, b) => a.countInStock - b.countInStock,
     },
     {
       title: "Giảm giá",
@@ -1446,8 +1392,8 @@ function AdminProduct({ keySelect }) {
   ];
 
   const dataTable =
-    products?.data?.length &&
-    products?.data?.map((product) => {
+    searchData?.data?.length &&
+    searchData?.data?.map((product) => {
       return {
         ...product,
         price: convertPrice(product.price),
@@ -1455,6 +1401,29 @@ function AdminProduct({ keySelect }) {
       };
     });
 
+  // ================================================================
+
+  // Search Data ====================================================
+  const [searchDataInput, setSearchInput] = useState("");
+  const [isShowRemoveIcon, setIsShowRemoveIcon] = useState(false);
+
+  const handleOnchangeSearchInput = (e) => {
+    setSearchInput(e.target.value);
+
+    if (e.target.value.trim().length > 0) {
+      setIsShowRemoveIcon(true);
+    }
+  };
+
+  const handleSearchData = () => {
+    getAllProduct(searchDataInput);
+  };
+
+  const handleClearInput = () => {
+    getAllProduct();
+    setSearchInput("");
+    setIsShowRemoveIcon(false);
+  };
   // ================================================================
 
   return (
@@ -1472,10 +1441,11 @@ function AdminProduct({ keySelect }) {
 
           <div className={cx("check__product")}>
             <div className={cx("check__group")}>
-              <h3>Tổng có {products?.data?.length} sản phẩm</h3>
+              <h3>Tổng có {searchData?.data?.length} sản phẩm</h3>
             </div>
 
             <div
+              onClick={handleOpenViewSoldOut}
               style={{ backgroundColor: "#ad2929" }}
               className={cx("check__group")}
             >
@@ -1484,11 +1454,30 @@ function AdminProduct({ keySelect }) {
           </div>
         </div>
 
+        <div className={cx("search__section")}>
+          <input
+            value={searchDataInput}
+            onChange={handleOnchangeSearchInput}
+            className={cx("search__input")}
+            placeholder="Tên sản phẩm"
+          />
+          {isShowRemoveIcon && (
+            <FontAwesomeIcon
+              onClick={handleClearInput}
+              className={cx("removeInput__icon")}
+              icon={faXmark}
+            />
+          )}
+          <button onClick={handleSearchData} className={cx("search__btn")}>
+            Tìm kiếm
+          </button>
+        </div>
+
         <div className={cx("table__section")}>
           <TableComponent
             keySelect={keySelect}
             handleUpdate={(id) => handleDetailsProduct(id)}
-            handleDelete={(id) => handleOpenDeleteModal(id)}
+            handleDelete={(id) => handleOpenModalDelete(id)}
             handleViewDetail={(id) => handleViewProductDetail(id)}
             handleDeleteMany={handleDeleteManyProduct}
             columns={columns}
@@ -1560,6 +1549,13 @@ function AdminProduct({ keySelect }) {
           <ViewproductDetail
             data={productView}
             handleCloseViewProductDetail={handleCloseViewProductDetail}
+          />
+        )}
+
+        {isShowViewSoldOut && (
+          <ViewSoldOutProduct
+            data={handleGetProductSoldOut()}
+            isCloseView={handleCloseViewSoldOut}
           />
         )}
 

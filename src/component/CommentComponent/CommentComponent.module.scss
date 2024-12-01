@@ -1,0 +1,135 @@
+.comment__block {
+  height: 100%;
+
+  .comment__wrapper {
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px 1px rgba(0, 0, 0, 0.1);
+
+    .comment__header {
+      text-align: left;
+    }
+
+    .comment__section {
+      margin-top: 12px;
+    }
+  }
+}
+
+.main__comment {
+  .input__section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .user__avatar {
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+
+      img {
+        height: 100%;
+        width: 100%;
+      }
+    }
+
+    input {
+      font-size: 14px;
+      padding: 6px;
+      outline: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: 1px solid #ccc;
+      width: 92%;
+
+      &:focus {
+        border-bottom: 1px solid black;
+      }
+    }
+  }
+
+  .action__btn {
+    padding: 6px;
+    display: flex;
+    gap: 12px;
+    flex-direction: row-reverse;
+
+    button {
+      font-size: 14px;
+      padding: 8px;
+      outline: none;
+      border: none;
+      color: white;
+      background-color: var(--btn-color);
+      border-radius: 8px;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+.other__comments {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column-reverse;
+
+  .comment__group {
+    .input__section {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .user__avatar {
+        height: 40px;
+        width: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        cursor: pointer;
+
+        img {
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+      .comment__content {
+        text-align: left;
+        width: 92%;
+
+        h8 {
+          font-weight: 550;
+          font-size: 16px;
+        }
+
+        p {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .cmt__action {
+      margin-left: 48px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .update__btn,
+      .delete__btn {
+        font-size: 12px;
+        color: #777777;
+        cursor: pointer;
+
+        &:hover {
+          color: black;
+        }
+      }
+    }
+  }
+}

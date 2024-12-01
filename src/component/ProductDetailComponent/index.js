@@ -16,6 +16,7 @@ import CardProduct from "../CardProduct";
 import * as ProductService from "~/services/ProductService";
 import * as message from "~/component/Message";
 import ProductConfig from "../ProductConfig";
+import CommentComponent from "../CommentComponent";
 
 const cx = classNames.bind(styles);
 
@@ -83,32 +84,29 @@ function ProductDetailComponent({ idProduct }) {
   const fetchProductAll = async () => {
     const res = await ProductService.getAllProduct();
 
-    return res;
+    if (res?.status === "OK") {
+      const similar = res?.data?.filter((product) => {
+        return (
+          product.brand === productDetail?.brand &&
+          product.name !== productDetail?.name
+        );
+      });
+
+      setSimilarProducts(similar);
+    }
   };
 
-  const { isLoading, data: products } = useQuery({
-    queryKey: ["product"],
-    queryFn: fetchProductAll,
-    retry: 3,
-    retryDelay: 1000,
-  });
-
   useEffect(() => {
-    const similar = products?.data?.filter((product) => {
-      return (
-        product.brand === productDetail?.brand &&
-        product.name !== productDetail?.name
-      );
-    });
-
-    setSimilarProducts(similar);
-  }, [isLoading]);
+    fetchProductAll();
+  }, []);
 
   //Add to Cart ===============================================
   const location = useLocation();
 
   const handleAddToCart = () => {
     if (!user?.id) {
+      message.toastSuccess("Cần Đăng nhập trước để thêm sản phẩm vào Giỏ hàng");
+
       navigate("/sign-in", { state: location?.pathname });
       return;
     }
@@ -123,49 +121,57 @@ function ProductDetailComponent({ idProduct }) {
           order.ram === optionChoosen?.ram &&
           order.storage === optionChoosen?.storage;
 
+        let checkDifferentOption = [
+          order.color !== optionChoosen?.color,
+          order.ram !== optionChoosen?.ram,
+          order.storage !== optionChoosen?.storage,
+        ];
+
         const isDifferentOption =
           order.name === productDetail?.name &&
-          (order.color !== optionChoosen?.color ||
-            order.ram !== optionChoosen?.ram ||
-            order.storage !== optionChoosen?.storage);
+          checkDifferentOption.includes(false);
 
         if (isSameProductAndOption) {
+          itemExists = true;
+
           if (order.amount + numProduct <= optionChoosen?.quantity) {
             dispatch(
               addOrderProduct({
                 orderItem: {
                   ...order,
-                  amount: order.amount + numProduct,
+                  amount: numProduct,
                 },
               })
             );
-            message.success("Thêm sản phẩm thành công");
+            message.toastSuccess("Thêm sản phẩm thành công");
           } else {
-            message.error(
-              "Số lượng sản phẩm đã chọn lớn hơn số lượng sản phẩm trong kho"
-            );
+            message.toastError("Số lượng sản phẩm không đủ");
           }
-          itemExists = true;
         } else if (isDifferentOption && !itemExists) {
-          dispatch(
-            addOrderProduct({
-              orderItem: {
-                name: productDetail?.name,
-                amount: numProduct,
-                image: optionChoosen?.image,
-                price: optionChoosen?.price,
-                product: productDetail?._id,
-                discount: productDetail?.discount,
-                optionId: optionChoosen?.id,
-                color: optionChoosen?.color,
-                ram: optionChoosen?.ram,
-                storage: optionChoosen?.storage,
-                countInStock: optionChoosen?.quantity,
-              },
-            })
-          );
-          message.success("Thêm sản phẩm thành công");
           itemExists = true;
+
+          if (order.amount + numProduct <= optionChoosen?.quantity) {
+            dispatch(
+              addOrderProduct({
+                orderItem: {
+                  name: productDetail?.name,
+                  amount: numProduct,
+                  image: optionChoosen?.image,
+                  price: optionChoosen?.price,
+                  product: productDetail?._id,
+                  discount: productDetail?.discount,
+                  optionId: optionChoosen?.id,
+                  color: optionChoosen?.color,
+                  ram: optionChoosen?.ram,
+                  storage: optionChoosen?.storage,
+                  countInStock: optionChoosen?.quantity,
+                },
+              })
+            );
+            message.toastSuccess("Thêm sản phẩm thành công");
+          } else {
+            message.toastError("Số lượng sản phẩm không đủ");
+          }
         }
       });
     }
@@ -188,7 +194,7 @@ function ProductDetailComponent({ idProduct }) {
           },
         })
       );
-      message.success("Thêm sản phẩm thành công");
+      message.toastSuccess("Thêm sản phẩm thành công");
     }
   };
 
@@ -358,15 +364,17 @@ function ProductDetailComponent({ idProduct }) {
 
         <div className={cx("similar__product")}>
           {similarProduct?.map((product) => {
+            const productPrice = product?.options?.find(
+              (_, index) => index === 0
+            );
+
             return (
               <CardProduct
                 key={product._id}
                 id={product._id}
-                countInStock={product.countInStock}
-                description={product.description}
                 image={product.image}
                 name={product.name}
-                price={product.price}
+                price={productPrice.price}
                 type={product.brand}
                 discount={product.discount}
                 selled={product.selled}
@@ -377,7 +385,9 @@ function ProductDetailComponent({ idProduct }) {
       </div>
 
       <div className={cx("productDetail__infor")}>
-        <div className={cx("comment")}>Comment</div>
+        <div className={cx("comment")}>
+          <CommentComponent idProduct={idProduct} />
+        </div>
 
         <div className={cx("configuration")}>
           <h2 className={cx("config__header")}>Cấu hình thiết bị</h2>

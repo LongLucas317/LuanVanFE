@@ -1,0 +1,28 @@
+.adminDashboard__wrapper {
+  padding: 16px;
+
+  .adminProduct__header__block {
+    .add__icon {
+      font-size: 40px;
+      height: 100px;
+      width: 100px;
+      text-align: center;
+      line-height: 100px;
+      margin: 12px 0;
+      border: dashed;
+      outline: none;
+      border-radius: 8px;
+      color: var(--btn-color);
+      opacity: 0.6;
+
+      &:hover {
+        opacity: 1;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .form__section {
+    width: 600px;
+  }
+}

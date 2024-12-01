@@ -45,7 +45,7 @@ function RevenueChart({
       {
         label: "Doanh thu (VNĐ)",
         data: [previousMonthRevenue || 0, monthlyRevenue[currentMonth]],
-        backgroundColor: ["#7bd2e5", "#06aa0c"], // Màu cho tháng trước và tháng hiện tại
+        backgroundColor: ["#7bd2e5", "#06aa0c"],
       },
     ],
   };
@@ -102,7 +102,7 @@ function RevenueChart({
   };
 
   // Dữ liệu cho biểu đồ cột so sánh doanh thu giữa năm hiện tại và năm trước
-  const barData = {
+  const yearBarData = {
     labels: [
       "Tháng 1",
       "Tháng 2",
@@ -131,7 +131,7 @@ function RevenueChart({
     ],
   };
 
-  const barOptions = {
+  const yearBarOptions = {
     responsive: true,
     plugins: {
       legend: { display: true },
@@ -197,6 +197,7 @@ function RevenueChart({
         <div style={{ width: "40%", margin: "0 auto" }}>
           <Bar data={monthBarData} options={monthBarOptions} />
         </div>
+
         <div style={{ width: "60%", margin: "0 auto" }}>
           <Line data={yearLineData} options={yearLineOptions} />
         </div>
@@ -206,8 +207,9 @@ function RevenueChart({
 
       <div style={{ display: "flex", gap: "2rem" }}>
         <div style={{ width: "40%", margin: "0 auto" }}>
-          <Bar data={barData} options={barOptions} />
+          <Bar data={yearBarData} options={yearBarOptions} />
         </div>
+
         <div style={{ width: "60%", margin: "0 auto" }}>
           <Line data={lineData} options={lineOptions} />
         </div>

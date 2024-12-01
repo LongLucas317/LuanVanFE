@@ -186,7 +186,7 @@ function Cart() {
 
   // Create Order ====================================================
   const handleCreateOrder = () => {
-    if (!user?.name || !user.address || !user.phone || !user.city) {
+    if (!user?.name || !user.address || !user.phone) {
       setIsOpenModalInfor(true);
     } else if (!orders?.orderItemsSelected?.length) {
       message.error("Hãy chọn sản phẩm muốn thanh toán");
@@ -205,7 +205,6 @@ function Cart() {
     name: "",
     phone: "",
     address: "",
-    city: "",
   });
 
   useEffect(() => {
@@ -218,7 +217,6 @@ function Cart() {
         name: user?.name,
         phone: user?.phone,
         address: user?.address,
-        city: user?.city,
       });
     }
   }, [isOpenModalInfor]);
@@ -229,7 +227,6 @@ function Cart() {
       email: "",
       phone: "",
       address: "",
-      city: "",
       isAdmin: false,
     });
     form.resetFields();
@@ -245,8 +242,8 @@ function Cart() {
   const { isPending } = mutationUpdate;
 
   const handleUpdateUserInfor = () => {
-    const { name, phone, address, city } = stateUserDetails;
-    if (name && phone && address && city) {
+    const { name, phone, address } = stateUserDetails;
+    if (name && phone && address) {
       mutationUpdate.mutate(
         {
           id: user?.id,
@@ -255,10 +252,9 @@ function Cart() {
         },
         {
           onSuccess: () => {
-            dispatch(updateUser({ name, phone, address, city }));
+            dispatch(updateUser({ name, phone, address }));
             setIsOpenModalInfor(false);
             message.success("Cập nhật thông tin thành công");
-            window.location.reload();
           },
         }
       );
@@ -469,7 +465,7 @@ function Cart() {
               <div className={cx("address__section")}>
                 <p className={cx("addess__header")}>Địa chỉ:</p>
                 <div className={cx("address__wrapper")}>
-                  <p>{`${user?.address} - ${user?.city}`}</p>
+                  <p>{user?.address}</p>
                   <span
                     onClick={handleChangeAddress}
                     className={cx("change__btn")}
@@ -489,7 +485,9 @@ function Cart() {
 
                 <div className={cx("product__ship")}>
                   <p className={cx("ship__header")}>Quyền lời hội viên:</p>
-                  <p className={cx("ship__value")}>-{memberDiscountPrice}%</p>
+                  <p className={cx("ship__value")}>
+                    Giảm {memberDiscountPrice}%
+                  </p>
                 </div>
               </div>
 
@@ -669,7 +667,7 @@ function Cart() {
               <div className={cx("address__section")}>
                 <p className={cx("addess__header")}>Địa chỉ:</p>
                 <div className={cx("address__wrapper")}>
-                  <p>{`${user?.address} - ${user?.city}`}</p>
+                  <p>{user?.address}</p>
                   <span
                     onClick={handleChangeAddress}
                     className={cx("change__btn")}
@@ -795,23 +793,6 @@ function Cart() {
               <Input
                 name="address"
                 value={stateUserDetails.address}
-                onChange={handleOnChangeDetails}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Thành phố"
-              name="city"
-              rules={[
-                {
-                  required: true,
-                  message: "Hãy nhập thành phố!",
-                },
-              ]}
-            >
-              <Input
-                name="city"
-                value={stateUserDetails.city}
                 onChange={handleOnChangeDetails}
               />
             </Form.Item>

@@ -153,8 +153,8 @@ function OrderSuccess() {
               <strong>Điện thoại:</strong> {state?.user?.phone}
             </p>
             <p>
-              <strong>Địa chỉ giao hàng:</strong> {state?.user?.address} -{" "}
-              {state?.user?.city}
+              <strong>Địa chỉ giao hàng:</strong>
+              {state?.user?.address}
             </p>
           </div>
 

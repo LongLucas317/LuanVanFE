@@ -5,3 +5,83 @@
     margin-top: 12px;
   }
 }
+
+.search__section {
+  position: relative;
+  margin: 12px 0px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .search__input {
+    font-size: 16px;
+    padding: 4px 6px;
+    outline: none;
+    border: 1px solid black;
+    border-radius: 8px;
+  }
+
+  .removeInput__icon {
+    position: absolute;
+    top: 14;
+    left: 188px;
+    z-index: 10;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .search__btn {
+    font-size: 16px;
+    padding: 5px 6px;
+    border: none;
+    outline: none;
+    color: white;
+    background-color: var(--btn-color);
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+.form__group {
+  display: flex;
+  align-items: center;
+
+  .form__label {
+    width: 33%;
+  }
+
+  .toggle-switch {
+    width: 40px;
+    height: 20px;
+    border-radius: 15px;
+    background-color: #ccc;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .toggle-switch.on {
+    background-color: #60c4d5;
+  }
+
+  .toggle-knob {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-switch.on .toggle-knob {
+    transform: translateX(20px);
+  }
+}

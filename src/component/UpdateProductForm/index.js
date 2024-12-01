@@ -1375,6 +1375,38 @@ function UpdateProductForm(props) {
                       // ]}
                     >
                       <div className={cx("item__wrapper")}>
+                        <label className={cx("form__label")}>Wifi:</label>
+
+                        <input
+                          value={
+                            stateProductDetails?.specifications.connectivity
+                              .wifi
+                          }
+                          onChange={(e) =>
+                            handleOnChangeDetails(
+                              e,
+                              "specifications",
+                              "connectivity",
+                              "wifi"
+                            )
+                          }
+                          className={cx("form__input")}
+                          type="text"
+                          placeholder="Wifi"
+                        />
+                      </div>
+                    </Form.Item>
+
+                    <Form.Item
+                      className={cx("form__group")}
+                      // rules={[
+                      //   {
+                      //     required: true,
+                      //     message: "Cần thêm Tên Sản phẩm!",
+                      //   },
+                      // ]}
+                    >
+                      <div className={cx("item__wrapper")}>
                         <label className={cx("form__label")}>Bluetooth:</label>
 
                         <input

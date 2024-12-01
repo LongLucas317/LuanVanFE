@@ -42,14 +42,25 @@ function SignUp() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const infor = {
-      name,
-      email,
-      password,
-      confirmPassword,
-    };
+    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+    const isEmail = reg.test(email);
 
-    mutation.mutate(infor);
+    if (!name || !email || !password || !confirmPassword) {
+      message.error("Hãy nhập thông tin đăng ký");
+    } else if (!isEmail) {
+      message.error("Email sai định dạng");
+    } else if (password !== confirmPassword) {
+      message.error("Mật khẩu không khớp");
+    } else {
+      const infor = {
+        name,
+        email,
+        password,
+        confirmPassword,
+      };
+
+      mutation.mutate(infor);
+    }
   };
 
   const mutation = useMutationHook((data) => UserServices.signUpUser(data));
@@ -98,7 +109,7 @@ function SignUp() {
               <input
                 value={email}
                 onChange={handleOnchangeEmail}
-                type="email"
+                type="text"
                 id="email"
                 name="email"
                 className={cx("form__input")}

@@ -49,7 +49,11 @@ function ProductConfig({ data, handleCloseConfigModal }) {
                 <div className={cx("item__list", "even__item")}>
                   <p className={cx("item__header")}>Tính năng màn hình:</p>
                   <div className={cx("item__block")}>
-                    <p>{data?.screen?.features}</p>
+                    <p>
+                      {data?.screen?.features?.map((feature, index) => {
+                        return <p key={index}>{feature}</p>;
+                      })}
+                    </p>
                   </div>
                 </div>
 

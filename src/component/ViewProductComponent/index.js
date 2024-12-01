@@ -88,6 +88,14 @@ function ViewproductDetail(props) {
 
                 <div className={cx("form__group")}>
                   <label className={cx("form__label")}>
+                    Giảm giá sắp áp dụng:
+                  </label>
+
+                  <h4 className={cx("form__data")}>{data?.discountAmount}%</h4>
+                </div>
+
+                <div className={cx("form__group")}>
+                  <label className={cx("form__label")}>
                     Thời gian bắt đầu giảm giá:
                   </label>
 
@@ -117,9 +125,11 @@ function ViewproductDetail(props) {
                 </div>
 
                 <div className={cx("form__group")}>
-                  <label className={cx("form__label")}>Giảm giá(Nếu có):</label>
+                  <label className={cx("form__label")}>
+                    Giảm giá đang áp dụng:
+                  </label>
 
-                  <h4 className={cx("form__data")}>{data?.discountAmount}%</h4>
+                  <h4 className={cx("form__data")}>{data?.discount}%</h4>
                 </div>
 
                 <div className={cx("form__group")}>
@@ -371,6 +381,16 @@ function ViewproductDetail(props) {
 
                       <h4 className={cx("form__data")}>
                         {data?.specifications?.connectivity?.network}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className={cx("form__group")}>
+                    <div className={cx("item__wrapper")}>
+                      <label className={cx("form__label")}>Wifi:</label>
+
+                      <h4 className={cx("form__data")}>
+                        {data?.specifications?.connectivity?.wifi}
                       </h4>
                     </div>
                   </div>

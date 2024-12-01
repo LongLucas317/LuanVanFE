@@ -171,7 +171,7 @@ function SliderComponent(props) {
     <>
       {!!sliderData?.length && (
         <div className={cx("slider__section")}>
-          <div className={cx("slider__img")}>
+          <div className={cx("slider__main")}>
             <img src={sliderData[currentImage]} alt="slider" />
           </div>
 

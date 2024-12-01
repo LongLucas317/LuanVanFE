@@ -50,7 +50,11 @@ function Profile() {
     if (isSuccess) {
       message.success("Cập nhật thành công");
       handleGetDetailUser(user?.id, user?.access_token);
-      window.location.reload();
+      setInterval(() => {
+        window.location.reload();
+      }, 2000);
+
+      clearInterval();
     } else if (isError) {
       message.success("Cập nhật thất bại");
     }

@@ -1331,6 +1331,35 @@ function CreateProductForm(props) {
                       // ]}
                     >
                       <div className={cx("item__wrapper")}>
+                        <label className={cx("form__label")}>Wifi:</label>
+
+                        <input
+                          value={stateProduct?.specifications.connectivity.wifi}
+                          onChange={(e) =>
+                            handleOnChange(
+                              e,
+                              "specifications",
+                              "connectivity",
+                              "wifi"
+                            )
+                          }
+                          className={cx("form__input")}
+                          type="text"
+                          placeholder="Wifi"
+                        />
+                      </div>
+                    </Form.Item>
+
+                    <Form.Item
+                      className={cx("form__group")}
+                      // rules={[
+                      //   {
+                      //     required: true,
+                      //     message: "Cần thêm Tên Sản phẩm!",
+                      //   },
+                      // ]}
+                    >
+                      <div className={cx("item__wrapper")}>
                         <label className={cx("form__label")}>Bluetooth:</label>
 
                         <input
@@ -2133,7 +2162,7 @@ function CreateProductForm(props) {
                                       e,
                                       "options",
                                       "ram",
-                                      option._id
+                                      option.id
                                     );
                                   }}
                                   className={cx("form__input")}
@@ -2173,7 +2202,7 @@ function CreateProductForm(props) {
                                       e,
                                       "options",
                                       "storage",
-                                      option._id
+                                      option.id
                                     );
                                   }}
                                   className={cx("form__input")}
@@ -2213,7 +2242,7 @@ function CreateProductForm(props) {
                                       e,
                                       "options",
                                       "color",
-                                      option._id
+                                      option.id
                                     );
                                   }}
                                   className={cx("form__input")}

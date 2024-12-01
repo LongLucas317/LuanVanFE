@@ -8,7 +8,6 @@ const initialState = {
   avatar: "",
   access_token: "",
   id: "",
-  city: "",
   totalInvoice: 0,
   rank: "",
   isAdmin: false,
@@ -27,7 +26,6 @@ export const userSlice = createSlice({
         avatar = "",
         phone = "",
         _id = "",
-        city = "",
         totalInvoice = 0,
         rank = "",
         isAdmin = false,
@@ -41,7 +39,6 @@ export const userSlice = createSlice({
       State.id = _id ? _id : State.id;
       State.access_token = access_token ? access_token : State.access_token;
       State.isAdmin = isAdmin ? isAdmin : State.isAdmin;
-      State.city = city ? city : State.city;
       State.totalInvoice = totalInvoice ? totalInvoice : State.totalInvoice;
       State.rank = rank ? rank : State.rank;
     },
@@ -55,7 +52,6 @@ export const userSlice = createSlice({
       State.id = "";
       State.access_token = "";
       State.isAdmin = false;
-      State.city = "";
       State.totalInvoice = "";
       State.rank = "";
     },

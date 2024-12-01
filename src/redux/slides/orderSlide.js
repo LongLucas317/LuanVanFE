@@ -11,10 +11,7 @@ const initialState = {
   totalPrice: 0,
   user: "",
   isPaid: false,
-  paidAt: "",
-  isDelivered: false,
-  deliveredAt: "",
-  isSucessOrder: false,
+  isDelivered: "",
 };
 
 export const orderSlide = createSlice({

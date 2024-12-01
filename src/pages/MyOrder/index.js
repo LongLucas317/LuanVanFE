@@ -4,9 +4,7 @@ import styles from "./MyOrder.module.scss";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import * as UserService from "~/services/UserServices";
 import * as OrderService from "~/services/OrderService";
-import * as RevenueService from "~/services/RevenueService";
 
 import { updateUser } from "~/redux/slides/userSlide";
 import { convertPrice } from "~/utils";
@@ -35,111 +33,11 @@ function MyOrder() {
 
   const { data } = queryOrder;
 
-  // Revenue =========================================================
-  const currentMonth = new Date().getMonth(); // Tháng hiện tại (0-11)
-  const currentYear = new Date().getFullYear();
-
-  const getRevenueCurrentMonth = async () => {
-    const res = await RevenueService.getRevenueData(
-      currentYear,
-      currentMonth + 1
-    );
-    return res;
-  };
-
-  const queryRevenueCurrentMonth = useQuery({
-    queryKey: ["current-month-revenue"],
-    queryFn: getRevenueCurrentMonth,
-  });
-
-  const { data: currentMonthRevenue } = queryRevenueCurrentMonth;
-
-  const mutationUpdateRavenue = useMutationHook((data) => {
-    const res = RevenueService.updateRevenue(data);
-    return res;
-  });
-
-  const { data: ravenueData, isSuccess: isRavenueSuccess } =
-    mutationUpdateRavenue;
-
-  // =================================================================
-
-  const mutationUpdateUser = useMutationHook((data) => {
-    const { id, token, ...rests } = data;
-    const res = UserService.updateUser(id, token, { ...rests });
-    return res;
-  });
-
-  const { data: dataUpdateUser, isSuccess: isSuccessUpdateUser } =
-    mutationUpdateUser;
-
   const mutationCancelOrder = useMutationHook((data) => {
     const { id, token, orderItems, userId } = data;
     const res = OrderService.cancelOrder(id, token, orderItems, userId);
     return res;
   });
-
-  const handleCheckAndUpdateUser = (order) => {
-    if (
-      user?.rank === "Bạc" &&
-      user?.totalInvoice - order.totalPrice <= 10000000
-    ) {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice:
-          user?.totalInvoice - order.totalPrice <= 0
-            ? 0
-            : user?.totalInvoice - order.totalPrice,
-        rank: "Đồng",
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice - order.totalPrice,
-          token: user?.access_token,
-          rank: "Đồng",
-        })
-      );
-    } else if (
-      user?.rank === "Vàng" &&
-      user?.totalInvoice - order.totalPrice <= 20000000
-    ) {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice:
-          user?.totalInvoice - order.totalPrice <= 0
-            ? 0
-            : user?.totalInvoice - order.totalPrice,
-        rank: "Bạc",
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice - order.totalPrice,
-          token: user?.access_token,
-          rank: "Bạc",
-        })
-      );
-    } else if (user?.rank === "Đồng") {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice:
-          user?.totalInvoice - order.totalPrice <= 0
-            ? 0
-            : user?.totalInvoice - order.totalPrice,
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice - order.totalPrice,
-          token: user?.access_token,
-        })
-      );
-    }
-  };
 
   const handleCancelOrder = (order) => {
     mutationCancelOrder.mutate(
@@ -155,14 +53,6 @@ function MyOrder() {
         },
       }
     );
-
-    handleCheckAndUpdateUser(order);
-
-    mutationUpdateRavenue.mutate({
-      year: currentYear,
-      month: currentMonth + 1,
-      amount: currentMonthRevenue?.data[0]?.amount - order.totalPrice,
-    });
   };
 
   const {

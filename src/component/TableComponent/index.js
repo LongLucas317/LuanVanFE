@@ -2,7 +2,7 @@ import classNames from "classnames/bind";
 import styles from "./TableComponent.module.scss";
 import React from "react";
 
-import { Table } from "antd";
+import { Pagination } from "antd";
 import Loading from "../LoadingComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -16,6 +16,7 @@ function TableComponent(props) {
     handleDelete,
     handleViewDetail,
     handleOpenUpdateOrderModal,
+    handleOpenUpdateOrderModalReceive,
     data: dataSource = [],
     columns = [],
     isLoadingAllProduct = false,
@@ -24,7 +25,9 @@ function TableComponent(props) {
   const renderAction = (id) => {
     return (
       <div className={cx("action__wrapper")}>
-        {(keySelect === "product" || keySelect === "user") && (
+        {(keySelect === "product" ||
+          keySelect === "user" ||
+          keySelect === "userRank") && (
           <FontAwesomeIcon
             style={{
               color: "#318ef2",
@@ -36,7 +39,9 @@ function TableComponent(props) {
           />
         )}
 
-        {(keySelect === "product" || keySelect === "user") && (
+        {(keySelect === "product" ||
+          keySelect === "user" ||
+          keySelect === "userRank") && (
           <FontAwesomeIcon
             style={{
               margin: "0px 8px",
@@ -64,26 +69,41 @@ function TableComponent(props) {
     );
   };
 
-  const renderChangeStatus = (id) => {
+  const renderChangeStatus = (order) => {
     return (
       <div className={cx("status__wrapper")}>
-        {id !== null ? (
+        {order?._id !== null ? (
           <>
             <button
               onClick={(e) => {
                 e.preventDefault();
-                handleOpenUpdateOrderModal(id, "Đã nhận đơn");
+                handleOpenUpdateOrderModalReceive(order, "Đã nhận đơn");
               }}
               className={cx("receive__btn")}
+              disabled={order?.isDelivered === "Đã nhận đơn"}
+              style={
+                order?.isDelivered === "Đã nhận đơn"
+                  ? { cursor: "not-allowed" }
+                  : {}
+              }
             >
               Đã Nhận Đơn
             </button>
             <button
               onClick={(e) => {
                 e.preventDefault();
-                handleOpenUpdateOrderModal(id, "Đã giao cho đơn vị vận chuyển");
+                handleOpenUpdateOrderModal(
+                  order?._id,
+                  "Đã giao cho đơn vị vận chuyển"
+                );
               }}
               className={cx("ship__btn")}
+              disabled={order?.isDelivered === "Đã giao cho đơn vị vận chuyển"}
+              style={
+                order?.isDelivered === "Đã giao cho đơn vị vận chuyển"
+                  ? { cursor: "not-allowed" }
+                  : {}
+              }
             >
               Đã Giao
             </button>
@@ -109,7 +129,7 @@ function TableComponent(props) {
             </thead>
 
             <tbody>
-              {dataSource?.map((data) => {
+              {dataSource?.reverse()?.map((data) => {
                 return (
                   <tr key={data?._id}>
                     {columns?.map((column, index) => {
@@ -124,7 +144,7 @@ function TableComponent(props) {
                             : "Chưa thanh toán"
                           : column?.dataIndex === "updateOrder"
                           ? data?.["isDelivered"] !== "Đã nhận được hàng"
-                            ? renderChangeStatus(data?._id)
+                            ? renderChangeStatus(data)
                             : renderChangeStatus(null)
                           : column?.dataIndex !== "action"
                           ? data?.[column?.dataIndex]

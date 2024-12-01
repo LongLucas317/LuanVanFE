@@ -6,6 +6,16 @@
   border-radius: 8px;
   overflow: hidden;
 
+  .slider__main {
+    height: 100%;
+    width: 100%;
+
+    img {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
   &:hover .changeImg__btn {
     display: flex;
     transition: 0.2s ease;

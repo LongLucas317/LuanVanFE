@@ -10,17 +10,7 @@ const cx = classNames.bind(styles);
 
 function CardProduct(props) {
   const navigate = useNavigate();
-  const {
-    countInStock,
-    description,
-    image,
-    name,
-    price,
-    brand,
-    discount,
-    selled,
-    id,
-  } = props;
+  const { image, name, price, discount, selled, id } = props;
 
   const handleNavigateDetailProduct = (id) => {
     navigate(`/product-detail/${id}`);

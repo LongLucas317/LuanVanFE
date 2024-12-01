@@ -21,55 +21,40 @@ function AdminDashboard() {
 
   const queryRevenueLastYear = async () => {
     const res = await RevenueService.getRevenueData(currentYear - 1);
+
+    if (res?.status === "OK") {
+      const lastRevenueArr = res?.data?.map((revenue) => {
+        return revenue?.amount;
+      });
+
+      setRevenueLastYear(lastRevenueArr);
+
+      const decemberLastYearRevenue = res?.data?.find(
+        (revenue) => revenue.month === 12
+      );
+
+      setRevenueDecemberLastYear(decemberLastYearRevenue?.amount);
+    }
+
     return res;
   };
 
-  const queryPreviousLastRevenue = useQuery({
-    queryKey: ["previous-revenue"],
-    queryFn: queryRevenueLastYear,
-  });
-
-  const { data: previousRevenue } = queryPreviousLastRevenue;
-
-  const handleChangeToRevenueArr = () => {
-    const lastRevenueArr = previousRevenue?.data?.map((revenue) => {
-      return revenue?.amount;
-    });
-
-    setRevenueLastYear(lastRevenueArr);
-  };
-
-  const handleGetDecemberRevenueLastYear = () => {
-    const decemberLastYearRevenue = previousRevenue?.data?.find(
-      (revenue) => revenue.month === 12
-    );
-
-    setRevenueDecemberLastYear(decemberLastYearRevenue?.amount);
-  };
-
   useEffect(() => {
-    handleGetDecemberRevenueLastYear();
-    handleChangeToRevenueArr();
-  }, [previousRevenue]);
+    queryRevenueLastYear();
+  }, []);
 
   const getRevenueCurrentYear = async () => {
     const res = await RevenueService.getRevenueData(currentYear);
-    return res;
+
+    if (res?.status === "OK") {
+      const currentRevenueArr = res?.data?.map((revenue) => revenue.amount);
+      setRevenueCurrentYear(currentRevenueArr);
+    }
   };
 
-  const queryRevenueCurrentYear = useQuery({
-    queryKey: ["current-revenue"],
-    queryFn: getRevenueCurrentYear,
-  });
-
-  const { data: currentRevenue } = queryRevenueCurrentYear;
-
   useEffect(() => {
-    const currentRevenueArr = currentRevenue?.data?.map(
-      (revenue) => revenue.amount
-    );
-    setRevenueCurrentYear(currentRevenueArr);
-  }, [currentRevenue]);
+    getRevenueCurrentYear();
+  }, []);
 
   return (
     <div className={cx("adminDashboard__wrapper")}>

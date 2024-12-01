@@ -21,6 +21,7 @@ import * as UserService from "~/services/UserServices";
 import * as OrderService from "~/services/OrderService";
 import * as PaymentService from "~/services/PaymentService";
 import * as RevenueService from "~/services/RevenueService";
+import * as RankService from "~/services/RankService";
 
 const cx = classNames.bind(style);
 
@@ -31,6 +32,23 @@ function Payment() {
   const orders = useSelector((state) => state.order);
 
   // Price bill ======================================================
+
+  // Get All Rank ===================================================
+  const getAllRank = async () => {
+    const res = await RankService.getAllRank();
+
+    return res;
+  };
+
+  const queryRank = useQuery({
+    queryKey: ["rank"],
+    queryFn: getAllRank,
+  });
+
+  const { data: ranks } = queryRank;
+
+  // ================================================================
+
   const priceMemo = useMemo(() => {
     const result = orders?.orderItemsSelected?.reduce((total, curr) => {
       return total + curr.price * ((100 - curr.discount) / 100) * curr.amount;
@@ -44,20 +62,19 @@ function Payment() {
   }, [orders]);
 
   const memberDiscountPrice = useMemo(() => {
-    if (priceMemo > 0) {
-      if (user?.rank === "Đồng") {
-        return 5;
-      } else if (user?.rank === "Bạc") {
-        return 10;
-      } else if (user?.rank === "Vàng") {
-        return 15;
-      }
+    const rankDiscount = ranks?.data?.find((rank) => rank?.name === user?.rank);
+    if (rankDiscount) {
+      return rankDiscount?.amount;
     } else return 0;
   }, [priceMemo]);
 
   const totalPrice = useMemo(() => {
     return Number(priceMemo * ((100 - memberDiscountPrice) / 100));
   }, [priceMemo, memberDiscountPrice]);
+
+  const totalPaypalPrice = useMemo(() => {
+    return Number((totalPrice / 25345).toFixed(2));
+  }, [totalPrice]);
 
   //==================================================================
 
@@ -69,7 +86,6 @@ function Payment() {
     name: "",
     phone: "",
     address: "",
-    city: "",
   });
 
   useEffect(() => {
@@ -82,7 +98,6 @@ function Payment() {
         name: user?.name,
         phone: user?.phone,
         address: user?.address,
-        city: user?.city,
       });
     }
   }, [isOpenModalInfor]);
@@ -93,7 +108,6 @@ function Payment() {
       email: "",
       phone: "",
       address: "",
-      city: "",
       isAdmin: false,
     });
     form.resetFields();
@@ -109,8 +123,8 @@ function Payment() {
   const { isPending, data } = mutationUpdateUser;
 
   const handleUpdateUserInfor = () => {
-    const { name, phone, address, city } = stateUserDetails;
-    if (name && phone && address && city) {
+    const { name, phone, address } = stateUserDetails;
+    if (name && phone && address) {
       mutationUpdateUser.mutate(
         {
           id: user?.id,
@@ -119,7 +133,7 @@ function Payment() {
         },
         {
           onSuccess: () => {
-            dispatch(updateUser({ name, phone, address, city }));
+            dispatch(updateUser({ name, phone, address }));
             setIsOpenModalInfor(false);
             message.success("Cập nhật thông tin thành công");
             window.location.reload();
@@ -179,56 +193,6 @@ function Payment() {
     setPayment(e.target.value);
   };
 
-  const handleCheckAndUpdateUser = () => {
-    if (user?.rank === "Đồng" && user?.totalInvoice + totalPrice > 10000000) {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice: user?.totalInvoice + totalPrice,
-        rank: "Bạc",
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice + totalPrice,
-          token: user?.access_token,
-          rank: "Bạc",
-        })
-      );
-    } else if (
-      user?.rank === "Bạc" &&
-      user?.totalInvoice + totalPrice > 20000000
-    ) {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice: user?.totalInvoice + totalPrice,
-        rank: "Vàng",
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice + totalPrice,
-          token: user?.access_token,
-          rank: "Vàng",
-        })
-      );
-    } else if (user?.rank === "Vàng") {
-      mutationUpdateUser.mutate({
-        id: user?.id,
-        token: user?.access_token,
-        totalInvoice: user?.totalInvoice + totalPrice,
-      });
-
-      dispatch(
-        updateUser({
-          totalInvoice: user?.totalInvoice + totalPrice,
-          token: user?.access_token,
-        })
-      );
-    }
-  };
-
   const handleCreateOrder = () => {
     if (
       user?.access_token &&
@@ -236,7 +200,6 @@ function Payment() {
       user?.name &&
       user?.address &&
       user?.phone &&
-      user?.city &&
       priceMemo &&
       user?.id
     ) {
@@ -247,21 +210,12 @@ function Payment() {
         fullName: user?.name,
         phone: user?.phone,
         address: user?.address,
-        city: user?.city,
         paymentMethod: payment,
         itemsPrice: priceMemo,
         memberDiscount: memberDiscountPrice,
         totalPrice: totalPrice,
         user: user?.id,
         email: user?.email,
-      });
-
-      handleCheckAndUpdateUser();
-
-      mutationUpdateRavenue.mutate({
-        year: currentYear,
-        month: currentMonth + 1,
-        amount: currentMonthRevenue?.data[0]?.amount + totalPrice,
       });
     }
   };
@@ -280,12 +234,14 @@ function Payment() {
 
   useEffect(() => {
     if (isCreateOrederSuccess && dataCreateOrder?.status === "OK") {
-      message.success("Đặt hàng thành công");
+      message.notificationSuccess("Đặt hàng thành công");
       const arrOrdered = [];
       orders?.orderItemsSelected?.forEach((element) => {
         arrOrdered.push(element.optionId);
       });
+
       dispatch(removeAllOrderProduct({ listChecked: arrOrdered }));
+
       navigate("/order-success", {
         state: {
           payment,
@@ -332,7 +288,6 @@ function Payment() {
       fullName: user?.name,
       phone: user?.phone,
       address: user?.address,
-      city: user?.city,
       paymentMethod: payment,
       itemsPrice: priceMemo,
       memberDiscount: memberDiscountPrice,
@@ -340,13 +295,6 @@ function Payment() {
       user: user?.id,
       email: user?.email,
       isPaid: true,
-      paidAt: detail.update_time,
-    });
-
-    mutationUpdateUser.mutate({
-      id: user?.id,
-      token: user?.access_token,
-      totalInvoice: totalPrice,
     });
   };
 
@@ -367,7 +315,7 @@ function Payment() {
 
             <div className={cx("address__section")}>
               <p className={cx("payment__address")}>
-                {`${user?.name} | ${user?.phone} | ${user?.address} - ${user?.city}`}
+                {`${user?.name} | ${user?.phone} | ${user?.address}`}
               </p>
 
               <p
@@ -481,7 +429,7 @@ function Payment() {
                   <div className={cx("address__section")}>
                     <p className={cx("addess__header")}>Địa chỉ:</p>
                     <div className={cx("address__wrapper")}>
-                      <p>{`${user?.address} - ${user?.city}`}</p>
+                      <p>{user?.address}</p>
                       <span
                         onClick={handleChangeAddress}
                         className={cx("change__btn")}
@@ -502,7 +450,7 @@ function Payment() {
                     <div className={cx("product__ship")}>
                       <p className={cx("ship__header")}>Quyền lời hội viên:</p>
                       <p className={cx("ship__value")}>
-                        -{memberDiscountPrice}%
+                        Giảm {memberDiscountPrice}%
                       </p>
                     </div>
                   </div>
@@ -572,7 +520,9 @@ function Payment() {
 
                   <div className={cx("product__ship")}>
                     <p className={cx("ship__header")}>Quyền lợi hội viên:</p>
-                    <p className={cx("ship__value")}>-{memberDiscountPrice}%</p>
+                    <p className={cx("ship__value")}>
+                      Giảm {memberDiscountPrice}%
+                    </p>
                   </div>
                 </div>
 
@@ -586,8 +536,7 @@ function Payment() {
 
                   {payment === "paypal" && sdkReady ? (
                     <PayPalButton
-                      amount={totalPrice}
-                      // shippingPreference="NO_SHIPPING" // default is "GET_FROM_FILE"
+                      amount={totalPaypalPrice}
                       onSuccess={handlePaypalSuccess}
                       onError={() => {
                         alert("Fail to Purchare");
@@ -672,23 +621,6 @@ function Payment() {
                 <Input
                   name="address"
                   value={stateUserDetails.address}
-                  onChange={handleOnChangeDetails}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Thành phố"
-                name="city"
-                rules={[
-                  {
-                    required: true,
-                    message: "Hãy nhập thành phố!",
-                  },
-                ]}
-              >
-                <Input
-                  name="city"
-                  value={stateUserDetails.city}
                   onChange={handleOnChangeDetails}
                 />
               </Form.Item>

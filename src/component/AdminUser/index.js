@@ -1,15 +1,11 @@
 import classNames from "classnames/bind";
 import styles from "./AdminUser.module.scss";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPen,
-  faTrash,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-import { Button, Form, Input, Space } from "antd";
+import { Button, Form, Input } from "antd";
 
 import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
@@ -19,6 +15,7 @@ import TableComponent from "../TableComponent";
 import ModalComponent from "../ModalComponent";
 import DrawerComponent from "../DrawerComponent";
 import * as UserServices from "~/services/UserServices";
+import * as message from "~/component/Message";
 
 const cx = classNames.bind(styles);
 
@@ -26,11 +23,21 @@ function AdminUser({ keySelect }) {
   const [form] = Form.useForm();
   const user = useSelector((state) => state?.user);
 
-  // Get All User========================================================
+  // Get All User ===================================================
+  const [usersData, setUsersData] = useState([]);
 
-  const getAllUser = async () => {
-    const res = await UserServices.getAllsUser(user?.access_token);
-    return res;
+  const getAllUser = async (filter = "") => {
+    let res = {};
+    if (filter.length > 0) {
+      res = await UserServices.getAllsUser(user?.access_token, filter);
+    } else {
+      res = await UserServices.getAllsUser(user?.access_token, "");
+    }
+
+    if (res?.status === "OK") {
+      setUsersData(res);
+    }
+    // return res;
   };
 
   const queryUser = useQuery({
@@ -40,10 +47,31 @@ function AdminUser({ keySelect }) {
 
   const { data: users } = queryUser;
 
-  // ===================================================================
+  // ================================================================
+
+  // Search Data ====================================================
+  const [searchDataInput, setSearchInput] = useState("");
+  const [isShowRemoveIcon, setIsShowRemoveIcon] = useState(false);
+
+  const handleOnchangeSearchInput = (e) => {
+    setSearchInput(e.target.value);
+    if (e.target.value.trim().length > 0) {
+      setIsShowRemoveIcon(true);
+    }
+  };
+
+  const handleSearchData = () => {
+    getAllUser(searchDataInput);
+  };
+
+  const handleClearInput = () => {
+    getAllUser();
+    setSearchInput("");
+    setIsShowRemoveIcon(false);
+  };
+  // ================================================================
 
   // Update User========================================================
-  const [rowSelected, setRowSelected] = useState("");
   const [idUserUpdate, setIdUserUpdate] = useState(null);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
 
@@ -54,6 +82,13 @@ function AdminUser({ keySelect }) {
     address: "",
     isAdmin: false,
   });
+
+  const toggleButton = () => {
+    setStateUserDetails({
+      ...stateUserDetails,
+      isAdmin: !stateUserDetails?.isAdmin,
+    });
+  };
 
   const handleOnChangeDetails = (e) => {
     setStateUserDetails({
@@ -79,12 +114,6 @@ function AdminUser({ keySelect }) {
     form.setFieldsValue(stateUserDetails);
   }, [form, stateUserDetails]);
 
-  useEffect(() => {
-    if (rowSelected) {
-      fetchGetDetailsUser(rowSelected);
-    }
-  }, [rowSelected]);
-
   const handleDetailsUser = (id) => {
     if (id) {
       fetchGetDetailsUser(id);
@@ -99,17 +128,28 @@ function AdminUser({ keySelect }) {
     return res;
   });
 
-  const { data: dataUpdated, isSuccess: isSuccessUpdated } = mutationUpdate;
+  const {
+    data: dataUpdated,
+    isSuccess: isSuccessUpdated,
+    isError: isErrorUpdated,
+  } = mutationUpdate;
 
   useEffect(() => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       handleCloseDrawer();
       setIdUserUpdate(null);
+      message.success("Cập nhật tài khoản thành công");
+    } else if (isErrorUpdated) {
+      message.error("Cập nhật tài khoản thất bại");
+      handleCloseDrawer();
+      setIdUserUpdate(null);
     }
-  }, [isSuccessUpdated]);
+  }, [isSuccessUpdated, isErrorUpdated]);
 
   const handleCloseDrawer = () => {
     setIsOpenDrawer(false);
+    setIdUserUpdate(null);
+
     setStateUserDetails({
       name: "",
       email: "",
@@ -138,15 +178,22 @@ function AdminUser({ keySelect }) {
   // ===================================================================
 
   // Delete User========================================================
+  const [idDeleteUser, setIdDeleteUser] = useState(null);
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
 
+  const handleOpenModalDelete = (id) => {
+    setIdDeleteUser(id);
+    setIsModalOpenDelete(true);
+  };
+
   const handleCancelDelete = () => {
+    setIdDeleteUser(null);
     setIsModalOpenDelete(false);
   };
 
   const handleDeleteUser = () => {
     mutationDelete.mutate(
-      { id: rowSelected, token: user?.access_token },
+      { id: idDeleteUser, token: user?.access_token },
       {
         onSettled: () => {
           queryUser.refetch();
@@ -161,181 +208,49 @@ function AdminUser({ keySelect }) {
     return res;
   });
 
-  const { data: dataDeleted, isSuccess: isSuccessDeleted } = mutationDelete;
+  const {
+    data: dataDeleted,
+    isSuccess: isSuccessDeleted,
+    isError: isErrorDeleted,
+  } = mutationDelete;
 
   useEffect(() => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
       handleCancelDelete();
+      message.success("Xóa tài khoản thành công");
+    } else if (isErrorDeleted) {
+      handleCancelDelete();
+      message.error("Xóa tài khoản thất bại");
     }
-  }, [isSuccessDeleted]);
+  }, [isSuccessDeleted, isErrorDeleted]);
 
   // ===================================================================
-
-  // Delete Many User===================================================
-  const handleDeleteManyUser = (ids) => {
-    mutationDeleteMany.mutate(
-      { ids: ids, token: user?.access_token },
-      {
-        onSettled: () => {
-          queryUser.refetch();
-        },
-      }
-    );
-  };
-
-  const mutationDeleteMany = useMutationHook((data) => {
-    const { token, ...ids } = data;
-    const res = UserServices.deleteManyUser(ids, token);
-    return res;
-  });
-
-  // ===================================================================
-
-  // const renderAction = () => {
-  //   return (
-  //     <div className={cx("action__wrapper")}>
-  //       <FontAwesomeIcon
-  //         style={{
-  //           color: "#318ef2",
-  //           marginRight: "16px",
-  //           fontSize: "18px",
-  //           cursor: "pointer",
-  //         }}
-  //         icon={faPen}
-  //         onClick={handleDetailsUser}
-  //       />
-  //       <FontAwesomeIcon
-  //         style={{
-  //           color: "#ff3e3e",
-  //           fontSize: "18px",
-  //           cursor: "pointer",
-  //         }}
-  //         icon={faTrash}
-  //         onClick={() => setIsModalOpenDelete(true)}
-  //       />
-  //     </div>
-  //   );
-  // };
-
-  const searchInput = useRef(null);
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-  };
-  const handleReset = (clearFilters) => {
-    clearFilters();
-  };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<FontAwesomeIcon icon={faMagnifyingGlass} />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <FontAwesomeIcon
-        icon={faMagnifyingGlass}
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-  });
 
   const columns = [
     {
       title: "Tên người dùng",
       dataIndex: "name",
-      render: (text) => <a>{text}</a>,
-      sorter: (a, b) => a.name.length - b.name.length,
-      ...getColumnSearchProps("name"),
     },
     {
       title: "Email",
       dataIndex: "email",
-      ...getColumnSearchProps("email"),
     },
     {
       title: "Address",
       dataIndex: "address",
-      ...getColumnSearchProps("address"),
     },
     {
       title: "Điện thoại",
       dataIndex: "phone",
-      ...getColumnSearchProps("phone"),
     },
-    // {
-    //   title: "Vai trò",
-    //   dataIndex: "isAdmin",
-    //   filters: [
-    //     {
-    //       text: "True",
-    //       value: true,
-    //     },
-    //     {
-    //       text: "False",
-    //       value: false,
-    //     },
-    //   ],
-    //   onFilter: (value, record) => {
-    //     if (value === true) {
-    //       return record.isAdmin === "True";
-    //     }
-    //     return record.isAdmin === "False";
-    //   },
-    // },
+    {
+      title: "Xếp hạng",
+      dataIndex: "rank",
+    },
+    {
+      title: "Vai trò",
+      dataIndex: "isAdmin",
+    },
     {
       title: "Action",
       dataIndex: "action",
@@ -343,12 +258,12 @@ function AdminUser({ keySelect }) {
   ];
 
   const dataTable =
-    users?.data?.length &&
-    users?.data?.map((user) => {
+    usersData?.data?.length &&
+    usersData?.data?.map((user) => {
       return {
         ...user,
         key: user._id,
-        isAdmin: user?.isAdmin ? "True" : "False",
+        isAdmin: user?.isAdmin ? "Admin" : "Member",
       };
     });
 
@@ -356,27 +271,41 @@ function AdminUser({ keySelect }) {
     <div className={cx("adminUser__wrapper")}>
       <h2 className={cx("adminUser__header")}>Quản lý người dùng</h2>
 
+      <div className={cx("search__section")}>
+        <input
+          value={searchDataInput}
+          onChange={handleOnchangeSearchInput}
+          className={cx("search__input")}
+          placeholder="Tên tài khoản"
+        />
+        {isShowRemoveIcon && (
+          <FontAwesomeIcon
+            onClick={handleClearInput}
+            className={cx("removeInput__icon")}
+            icon={faXmark}
+          />
+        )}
+        <button onClick={handleSearchData} className={cx("search__btn")}>
+          Tìm kiếm
+        </button>
+      </div>
+
       <div className={cx("table__section")}>
         <TableComponent
           keySelect={keySelect}
           handleUpdate={(id) => handleDetailsUser(id)}
-          handleDeleteMany={handleDeleteManyUser}
+          handleDelete={handleOpenModalDelete}
           columns={columns}
           data={dataTable}
-          onRow={(record, rowIndex) => {
-            return {
-              onClick: (event) => {
-                setRowSelected(record._id);
-              },
-            };
-          }}
         />
       </div>
 
-      <DrawerComponent
-        title="Chi tiết người dùng"
-        isOpen={isOpenDrawer}
-        onClose={() => setIsOpenDrawer(false)}
+      <ModalComponent
+        title="Thêm Bậc xếp hạng"
+        open={isModalOpenDelete}
+        onCancel={handleCancelDelete}
+        onOk={handleDeleteUser}
+        forceRender
       >
         <Form
           className={cx("form__section")}
@@ -388,6 +317,36 @@ function AdminUser({ keySelect }) {
           labelAlign="left"
           form={form}
         >
+          <Form.Item name="isAdmin">
+            <div className={cx("form__group")}>
+              <label className={cx("form__label")}>Vai trò tài khoản:</label>
+
+              <div
+                className={cx("form__group")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                  padding: "5.5px 0px",
+                }}
+              >
+                <label className={cx("form__label")}>
+                  {stateUserDetails?.isAdmin ? "Admin" : "Member"}:
+                </label>
+                <div
+                  className={cx(
+                    "toggle-switch",
+                    stateUserDetails?.isAdmin ? "on" : "off"
+                  )}
+                  onClick={toggleButton}
+                >
+                  <div className={cx("toggle-knob")}></div>
+                </div>
+              </div>
+            </div>
+          </Form.Item>
+
           <Form.Item
             label="Tên"
             name="name"
@@ -422,19 +381,126 @@ function AdminUser({ keySelect }) {
             />
           </Form.Item>
 
+          <Form.Item label="Điện thoại" name="phone">
+            <Input
+              name="phone"
+              value={stateUserDetails.phone}
+              onChange={handleOnChangeDetails}
+            />
+          </Form.Item>
+
+          <Form.Item label="Địa chỉ" name="address">
+            <Input
+              name="address"
+              value={stateUserDetails.address}
+              onChange={handleOnChangeDetails}
+            />
+          </Form.Item>
+
           <Form.Item
-            label="Điện thoại"
-            name="phone"
+            wrapperCol={{
+              offset: 20,
+              span: 18,
+            }}
+          >
+            <Button type="primary" htmlType="submit">
+              Cập nhật
+            </Button>
+          </Form.Item>
+        </Form>
+      </ModalComponent>
+
+      <DrawerComponent
+        title="Chi tiết người dùng"
+        isOpen={isOpenDrawer}
+        onClose={() => setIsOpenDrawer(false)}
+      >
+        <Form
+          className={cx("form__section")}
+          name="basic"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 32 }}
+          onFinish={onUpdateUser}
+          autoComplete="off"
+          labelAlign="left"
+          form={form}
+        >
+          <Form.Item name="isAdmin">
+            <div className={cx("form__group")}>
+              <label className={cx("form__label")}>Vai trò tài khoản:</label>
+
+              <div
+                className={cx("form__group")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                  padding: "5.5px 0px",
+                }}
+              >
+                <label className={cx("form__label")}>
+                  {stateUserDetails?.isAdmin ? "Admin" : "Member"}:
+                </label>
+                <div
+                  className={cx(
+                    "toggle-switch",
+                    stateUserDetails?.isAdmin ? "on" : "off"
+                  )}
+                  onClick={toggleButton}
+                >
+                  <div className={cx("toggle-knob")}></div>
+                </div>
+              </div>
+            </div>
+          </Form.Item>
+
+          <Form.Item
+            label="Tên"
+            name="name"
             rules={[
               {
                 required: true,
-                message: "Số điện thoại là bắt buộc!",
+                message: "Tên người dùng là bắc buộc!",
               },
             ]}
           >
             <Input
+              name="name"
+              value={stateUserDetails.name}
+              onChange={handleOnChangeDetails}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              {
+                required: true,
+                message: "Email là bắt buộc!",
+              },
+            ]}
+          >
+            <Input
+              name="email"
+              value={stateUserDetails.email}
+              onChange={handleOnChangeDetails}
+            />
+          </Form.Item>
+
+          <Form.Item label="Điện thoại" name="phone">
+            <Input
               name="phone"
               value={stateUserDetails.phone}
+              onChange={handleOnChangeDetails}
+            />
+          </Form.Item>
+
+          <Form.Item label="Địa chỉ" name="address">
+            <Input
+              name="address"
+              value={stateUserDetails.address}
               onChange={handleOnChangeDetails}
             />
           </Form.Item>

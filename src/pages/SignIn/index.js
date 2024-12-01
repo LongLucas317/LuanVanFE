@@ -23,8 +23,6 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isShowPassword, setIsShowPassword] = useState(false);
-  // const [userRank, setUserRank] = useState("");
-  // const [isShowPassword, setIsShowPassword] = useState(false);
 
   const handleOnchangeEmail = (e) => {
     setEmail(e.currentTarget.value);
@@ -37,21 +35,31 @@ function SignIn() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const infor = {
-      email,
-      password,
-    };
+    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+    const isEmail = reg.test(email);
 
-    mutation.mutate(infor);
+    if (!email || !password) {
+      message.error("Hãy nhập thông tin đăng nhập");
+    } else if (!isEmail) {
+      message.error("Email sai định dạng");
+    } else {
+      const infor = {
+        email,
+        password,
+      };
+
+      mutation.mutate(infor);
+    }
   };
 
   const mutation = useMutationHook((data) => UserServices.loginUser(data));
   const { data, isPending, isSuccess, isError } = mutation;
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data?.status === "OK") {
       if (location?.state) {
-        message.success("Đăng nhập thành công");
+        message.toastSuccess("Đăng nhập thành công");
+
         navigate(location?.state);
       } else {
         message.success("Đăng nhập thành công");
@@ -65,10 +73,10 @@ function SignIn() {
           handleGetDetailUser(decoded?.id, data?.access_token);
         }
       }
-    } else if (isError) {
+    } else if (data?.status === "ERR") {
       message.error("Đăng nhập thất bại");
     }
-  }, [isSuccess]);
+  }, [isSuccess, isError]);
 
   const handleCheckUserRank = (total) => {
     let rankResult = "";

@@ -367,15 +367,17 @@ function Home() {
 
           <div className={cx("product__body", "sale__product")}>
             {saleProduct?.map((data) => {
+              const productPrice = data?.options?.find(
+                (_, index) => index === 0
+              );
+
               return (
                 <CardProduct
                   key={data._id}
                   id={data._id}
-                  countInStock={data.countInStock}
-                  description={data.description}
                   image={data.image}
                   name={data.name}
-                  price={data.price}
+                  price={productPrice.price}
                   type={data.brand}
                   discount={data.discount}
                   selled={data.selled}
@@ -405,15 +407,17 @@ function Home() {
 
             <div className={cx("product__body")}>
               {brand?.map((data) => {
+                const productPrice = data?.options?.find(
+                  (_, index) => index === 0
+                );
+
                 return (
                   <CardProduct
                     key={data._id}
                     id={data._id}
-                    countInStock={data.countInStock}
-                    description={data.description}
                     image={data.image}
                     name={data.name}
-                    price={data.price}
+                    price={productPrice.price}
                     type={data.brand}
                     discount={data.discount}
                     selled={data.selled}

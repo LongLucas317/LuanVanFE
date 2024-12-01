@@ -148,15 +148,17 @@ function Product() {
 
       <div className={cx("product__list")}>
         {products?.map((product) => {
+          const productPrice = product?.options?.find(
+            (_, index) => index === 0
+          );
+
           return (
             <CardProduct
               key={product._id}
               id={product._id}
-              countInStock={product.countInStock}
-              description={product.description}
               image={product.image}
               name={product.name}
-              price={product.price}
+              price={productPrice.price}
               type={product.type}
               discount={product.discount}
             />

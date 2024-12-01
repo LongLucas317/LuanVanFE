@@ -101,10 +101,7 @@ function ViewOrderComponent(props) {
 
               <div className={cx("user__address")}>
                 <h4>Địa chỉ nhận hàng:</h4>
-                <p>
-                  {data?.shippingAddress?.address} -{" "}
-                  {data?.shippingAddress?.city}
-                </p>
+                <p>{data?.shippingAddress?.address}</p>
               </div>
             </div>
           </div>
@@ -165,7 +162,7 @@ function ViewOrderComponent(props) {
             <h3>Tóm tắt đơn hàng</h3>
 
             <h4>
-              Quyền lợi hội viên: <p>-{data?.memberDiscount}%</p>
+              Quyền lợi hội viên: <p>Giảm {data?.memberDiscount}%</p>
             </h4>
 
             <h4>

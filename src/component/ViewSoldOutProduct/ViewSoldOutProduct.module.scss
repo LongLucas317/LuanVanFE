@@ -1,0 +1,70 @@
+.viewSoldOut__block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+  padding-top: 46px;
+  background-color: rgba(0, 0, 0, 0.2);
+
+  .viewSoldOut__wrapper {
+    width: 1200px;
+    margin: 0px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 8px 24px 32px;
+    background-color: #deeef1;
+
+    .viewSoldOut__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+
+      .close__btn {
+        height: 24px;
+        width: 24px;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.7;
+        }
+      }
+    }
+  }
+}
+
+.viewSoldOut__body {
+  max-height: 450px;
+  padding: 12px 24px 24px;
+  display: flex;
+  gap: 12px;
+  background-color: white;
+  overflow-y: scroll;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      background-color: #deeef1;
+    }
+
+    td,
+    th {
+      text-align: center;
+      border: 1px solid black;
+    }
+
+    .img__wrapper {
+      height: 150px;
+      width: 150px;
+
+      img {
+        height: 100%;
+        width: 100%;
+      }
+    }
+  }
+}

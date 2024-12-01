@@ -117,10 +117,7 @@ function OrderDetail() {
 
               <div className={cx("user__address")}>
                 <h4>Địa chỉ nhận hàng:</h4>
-                <p>
-                  {orderDetailData?.shippingAddress?.address} -{" "}
-                  {orderDetailData?.shippingAddress?.city}
-                </p>
+                <p>{orderDetailData?.shippingAddress?.address}</p>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDebounceHook } from "~/hooks/useDebounceHook";
 import * as ProductService from "~/services/ProductService";
 import { useNavigate } from "react-router-dom";
+import { convertPrice } from "~/utils";
 
 const cx = classNames.bind(styles);
 
@@ -56,6 +57,10 @@ function SearchResult({ handleCloseSearchResult }) {
         className={cx("search__list")}
       >
         {stateProduct?.map((product) => {
+          const productPrice = product?.options?.find(
+            (_, index) => index === 0
+          );
+
           return (
             <div
               onClick={() => handleNavigateDetailProduct(product._id)}
@@ -71,21 +76,22 @@ function SearchResult({ handleCloseSearchResult }) {
 
                 <div className={cx("result__price")}>
                   <p className={cx("result__show")}>
-                    {product.discount !== 0
-                      ? product.price * ((100 - product.discount) / 100)
-                      : product.price}
-                    đ
+                    {product.isSale
+                      ? convertPrice(
+                          productPrice.price * ((100 - product.discount) / 100)
+                        )
+                      : convertPrice(productPrice.price)}
                   </p>
 
                   <p
                     style={
-                      product.discount !== 0
+                      product.isSale
                         ? { display: "block" }
                         : { display: "none" }
                     }
                     className={cx("result__through")}
                   >
-                    {product.price}đ
+                    {convertPrice(productPrice.price)}
                   </p>
                 </div>
               </div>
